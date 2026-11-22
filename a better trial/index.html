@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gene-ius · The Daily Dive for Rare Answers</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+:root{
+  --paper:#F6EBC3;--card:#F6EBC3;--ink:#2A1F2D;--dim:#6B5C62;
+  --pk:#C65A43;--cy:#233F73;--am:#B8862B;--li:#7A8236;--vi:#2A1F2D;
+  --bg:#2F5C95;--gold:#D9A441;--sage:#8FA37A;--coral:#E8806A;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:'VT323',ui-monospace,monospace;font-size:1.45rem;
+  line-height:1.3;min-height:100vh;transition:background-color 1s;
+}
+main{margin:0 auto;padding:12px 16px 40px;max-width:1600px}
+header{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin-bottom:14px;background:var(--paper);border:3px solid var(--ink);
+  padding:8px 14px;box-shadow:5px 5px 0 var(--pk);border-radius:6px;
+}
+.px{font-family:'Press Start 2P',ui-monospace,monospace}
+.brand{font-size:.85rem;line-height:1.6;color:var(--cy);letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.brand span.dna{color:var(--pk);font-size:1.1rem}
+.depth{text-align:right;line-height:1.1}
+.depth b{font-family:'Press Start 2P',monospace;font-size:1.05rem;color:var(--pk);font-weight:400}
+.depth small{display:block;font-size:1.1rem;color:var(--dim)}
+
+.game{display:grid;gap:16px}
+.cvw{position:relative;width:100%;aspect-ratio:13/9;border:3px solid var(--ink);box-shadow:6px 6px 0 var(--cy);background:var(--bg);overflow:hidden;border-radius:6px}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.lbl{
+  background:var(--paper);border:3px solid var(--ink);text-align:center;
+  font-size:1.12rem;min-height:2.6em;margin:12px 0 10px;padding:5px 12px;
+  color:var(--cy);border-radius:6px;display:flex;align-items:center;justify-content:center;
+}
+.card{
+  background:var(--card);border:3px solid var(--ink);padding:16px;
+  box-shadow:6px 6px 0 var(--cy);animation:rise .35s steps(6) both;
+  margin-bottom:16px;border-radius:6px;
+}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hide{display:none!important}
+
+h1,h2,h3{font-family:'Press Start 2P',monospace;line-height:1.6;margin:.2em 0 .6em;font-weight:400}
+h1{font-size:.88rem;color:var(--pk)}
+h2{font-size:.8rem}
+h3{font-size:.65rem;color:var(--cy)}
+p{margin:.45em 0}
+.dim{color:var(--dim)}
+.small{font-size:1.1rem}
+.highlight{color:var(--pk);font-weight:bold}
+
+input{
+  width:100%;font:inherit;font-size:1.55rem;padding:9px 14px;
+  border:3px solid var(--ink);border-radius:4px;background:#FFF8DC;
+  color:var(--ink);margin:10px 0;transition:border-color .2s;
+}
+input:focus{outline:none;border-color:var(--pk);background:#FFFFEA}
+
+button{
+  font-family:'Press Start 2P',monospace;font-size:.58rem;cursor:pointer;
+  border:3px solid var(--ink);background:var(--pk);color:#FFF6D6;
+  padding:11px 15px;box-shadow:0 4px 0 var(--ink);margin:4px 8px 6px 0;
+  border-radius:4px;transition:transform .1s,box-shadow .1s;
+}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+button:hover{filter:brightness(1.08)}
+button.alt{background:var(--cy)}
+button.sec{background:#5F6B7A}
+button.gold{background:var(--am);color:#2A1F2D}
+
+.pips{display:flex;gap:5px;margin-bottom:12px}
+.pips i{flex:1;height:11px;background:rgba(42,31,45,.15);border:2px solid var(--ink);border-radius:2px}
+.pips i.cur{background:var(--cy);box-shadow:0 0 5px var(--cy)}
+
+#tw{height:12px;background:#FFF8DC;border:2px solid var(--ink);margin-top:10px;border-radius:2px}
+#tb{height:100%;width:100%;background:var(--li);transition:width .1s linear}
+#tt{float:right;color:var(--pk);font-size:1.25rem}
+
+.bar{display:inline-flex;gap:3px;vertical-align:middle;margin-right:8px}
+.bar i{width:14px;height:12px;background:rgba(42,31,45,.15);border:2px solid var(--ink);border-radius:2px}
+.bar i.on{background:var(--li)}
+
+#fb{margin-top:8px;min-height:5.2em}
+#fb b{font-family:'Press Start 2P',monospace;font-size:.62rem;font-weight:400;line-height:1.8}
+#fb p{font-style:italic;color:#3A3037;margin:.35em 0}
+
+.err{color:var(--pk)}
+.blink{animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:.3}}
+
+ul{list-style:none;padding:0;margin:10px 0}
+li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px dotted rgba(42,31,45,.4)}
+li span:first-child{min-width:0;overflow-wrap:anywhere}
+li em{display:block;font-style:normal;font-size:1.05rem;color:var(--dim)}
+li em.nt{font-style:italic;color:#3A3037;margin-top:3px;font-size:1.15rem;line-height:1.25}
+
+.shake{animation:sh .35s steps(5)}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Leaderboard */
+#ld{margin-top:14px;padding:12px;border:3px solid var(--ink);background:#FFF9E2;border-radius:6px}
+.ld-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:10px}
+.ld-tabs{display:flex;gap:6px;margin-bottom:10px}
+.ld-tab{font-family:'Press Start 2P',monospace;font-size:.5rem;padding:6px 9px;border:2px solid var(--ink);background:#E6DBB5;cursor:pointer}
+.ld-tab.active{background:var(--cy);color:#FFF6D6}
+.ld-table{width:100%;border-collapse:collapse;font-size:1.15rem}
+.ld-table th{text-align:left;font-family:'Press Start 2P',monospace;font-size:.52rem;padding:5px 6px;border-bottom:2px solid var(--ink);color:var(--cy)}
+.ld-table td{padding:6px 6px;border-bottom:1px dotted rgba(42,31,45,.3)}
+.ld-table tr.me-row{background:rgba(198,90,67,.18);font-weight:bold}
+.stage-badge{display:inline-block;padding:2px 5px;font-size:.5rem;font-family:'Press Start 2P',monospace;border:1px solid var(--ink);border-radius:3px}
+.badge-4{background:#A06FC6;color:#fff}
+.badge-3{background:#7A8236;color:#fff}
+.badge-2{background:#233F73;color:#fff}
+.badge-1{background:#C65A43;color:#fff}
+
+.hist{display:flex;align-items:flex-end;gap:4px;height:70px;margin:18px 0 2px}
+.hist div{flex:1;background:var(--cy);min-height:3px;position:relative;border-radius:3px 3px 0 0}
+.hist div.me{background:var(--pk)}
+.hist div.me::after{content:"YOU";position:absolute;top:-18px;left:50%;transform:translateX(-50%);font:.48rem 'Press Start 2P',monospace;color:var(--pk);white-space:nowrap}
+.axis{display:flex;justify-content:space-between;font-size:1rem;color:var(--dim);margin-bottom:12px}
+
+.callsign-box{display:flex;gap:8px;align-items:center;margin:10px 0}
+.callsign-box input{margin:0;font-size:1.2rem;padding:6px 10px}
+.callsign-box button{margin:0;padding:8px 12px;white-space:nowrap}
+
+@media(min-width:900px){
+  body{height:100vh;overflow:hidden}
+  main{height:100vh;max-width:none;display:flex;flex-direction:column;padding:12px 22px 16px}
+  .game{flex:1;min-height:0;grid-template-columns:minmax(0,1.7fr) minmax(400px,1.1fr);gap:24px}
+  .left{display:flex;flex-direction:column;min-height:0}
+  .cvw{flex:1;aspect-ratio:auto;min-height:0}
+  .right{overflow-y:auto;min-height:0;padding:0 10px 16px 0}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="px brand">GENE-IUS</div>
+  <div class="depth"><b id="dm">0</b> nm<small id="tier">Ribosome</small></div>
+</header>
+
+<div class="game">
+<div class="left">
+  <div class="cvw"><canvas id="cv"></canvas></div>
+  <div class="lbl" id="stage">PRIMARY · Nascent chain emerging from ribosome exit tunnel</div>
+</div>
+
+<div class="right">
+  <!-- INTRO SCREEN -->
+  <section id="intro" class="card">
+  <h1>Fold deeper. Think rarer.</h1>
+  <p>Seven open questions a day, 27 seconds each. Lots of biological answers are valid, but the <b>rarer</b> your correct answer, the deeper your protein sinks and the further it folds through primary, secondary, tertiary, and quaternary structures.</p>
+  <p class="dim small">Note: Inaccurate answers cause a <b>MISFOLD</b> (three tries per question).</p>
+  <p><button id="b-daily">TODAY’S DIVE</button><button id="b-rand" class="alt">RANDOM DIVE</button></p>
+  <div style="margin-top:14px;border-top:2px dotted var(--dim);padding-top:10px">
+  <small class="dim">Diver Handle / Callsign:</small>
+  <div class="callsign-box">
+  <input id="player-name" maxlength="18" placeholder="e.g. Dr. Rosalind">
+  <button id="save-name" class="alt">SAVE</button>
+  </div>
+  </div>
+
+  <!-- HOW TO PLAY guide, appears after saving name -->
+  <div id="howto" class="hide" style="margin-top:14px;border:2px dashed var(--cy);padding:10px 14px;background:#EEF4FF;border-radius:6px">
+  <div class="px" style="font-size:.52rem;color:var(--cy);margin-bottom:6px">HOW TO PLAY</div>
+  <ul style="margin:0;padding:0;list-style:none;font-size:1.25rem">
+  <li style="border:none;padding:3px 0;display:block">[Q] You get <b>7 broad biology questions</b> per dive, 27 seconds each.</li>
+  <li style="border:none;padding:3px 0;display:block">[+] Any <b>correct</b> biological answer works - rarer answers earn more depth (nm).</li>
+  <li style="border:none;padding:3px 0;display:block">[x] Scientifically wrong answers cause a <b style="color:var(--pk)">MISFOLD</b> - you get 3 tries.</li>
+  <li style="border:none;padding:3px 0;display:block">[R] Rarity tiers: <b style="color:#B8862B">GENE-RIC</b> / <b style="color:#233F73">SPECIE-FIC</b> / <b style="color:#8E3B75">ONE IN A BIO-MILLION</b></li>
+  <li style="border:none;padding:3px 0;display:block">[&gt;] Deeper answers fold your protein further: Primary to Secondary to Tertiary to Quaternary.</li>
+  <li style="border:none;padding:3px 0;display:block">[s] After the dive, <b>copy your result</b> and share it with anyone.</li>
+  </ul>
+  </div>
+  </section>
+
+  <!-- PLAY SCREEN -->
+  <section id="play" class="card hide">
+  <div class="pips" id="pips"></div>
+  <h2 id="pq"></h2>
+
+  <div id="tw"><div id="tb"></div></div>
+  <div class="dim" style="overflow:hidden"><span id="tt">27</span>&nbsp;sec left</div>
+
+  <input id="inp" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your biological answer…">
+  <button id="go">DIVE</button><button id="next" class="hide">NEXT</button>
+  <div id="fb"></div>
+  </section>
+
+  <!-- FINISH SCREEN -->
+  <section id="done" class="card hide">
+  <div class="px dim" style="font-size:.55rem">EXPEDITION COMPLETE</div>
+  <h2 id="dt"></h2>
+  <p id="ds"></p>
+  <ul id="dl"></ul>
+
+  <div id="ld">
+  <div class="ld-header">
+  <span class="px" style="font-size:.6rem;color:var(--cy)">CRYO-EM LEADERBOARD</span>
+  <span id="ld-date" class="dim small"></span>
+  </div>
+  <div class="ld-tabs">
+  <button class="ld-tab active" id="tab-today">TODAY'S EXPEDITION</button>
+  <button class="ld-tab" id="tab-all">RECORD FOLDS</button>
+  </div>
+  <div id="ld-content"></div>
+  <div id="ld-hist-wrap"></div>
+  </div>
+
+  <p style="margin-top:14px">
+  <button id="share">COPY RESULT</button>
+  <button id="again" class="alt">DIVE AGAIN</button>
+  </p>
+  <p class="dim small" id="sh"></p>
+  </section>
+</div>
+</div>
+</main>
+
+<script>
+// =========================================================================
+// 1. DATA & BIOLOGICAL PROMPT BANK
+// =========================================================================
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim().replace(/^(the|a|an) /,'')}
+
+// Category tags: M=Molecule/Biochem, C=Cellular/Genetics, A=Anatomy/Physiology, O=Organism/Taxa, E=Ecology/Evolution, B=Biotech/Discovery
+const B_DATA=`a protein|hemoglobin,insulin,collagen|M
+a gene|brca1,p53,cftr|C
+an enzyme|amylase,catalase,dna polymerase|M
+a molecule found in living things|water,dna,glucose|M
+something you can find inside a cell|nucleus,mitochondria,ribosome|C
+a disease|cancer,diabetes,malaria|A
+a drug that comes from a living thing|penicillin,aspirin,morphine|M
+an animal|dog,cat,lion|O
+a plant|rose,oak,sunflower|O
+a microbe|e coli,yeast,staphylococcus|O
+a fungus|mushroom,yeast,penicillium|O
+a virus|hiv,influenza,coronavirus|O
+a bacterium|e coli,salmonella,staphylococcus aureus|O
+an organism that lives in the ocean|shark,whale,jellyfish|E
+an organism that survives somewhere extreme|tardigrade,thermus aquaticus,penguin|E
+a body part|heart,brain,liver|A
+a type of cell|neuron,red blood cell,stem cell|C
+a hormone|insulin,adrenaline,estrogen|M
+a bone|femur,skull,tibia|A
+a scientist who changed biology|charles darwin,gregor mendel,james watson|B
+a lab technique|pcr,microscopy,gel electrophoresis|B
+a biological process|photosynthesis,mitosis,cellular respiration|C
+a chemical made by an organism|insulin,penicillin,caffeine|M
+a way an animal protects itself|camouflage,mimicry,venom|E
+a way an organism gets its food|hunting,photosynthesis,foraging|E
+a way an organism reproduces|sexual reproduction,budding,binary fission|C
+a trait that helps an organism survive|camouflage,speed,thick fur|E
+something that glows|firefly,jellyfish,anglerfish|E
+something poisonous|poison dart frog,pufferfish,hemlock|E
+a parasite|tapeworm,tick,plasmodium|E
+a partnership between two species|clownfish and anemone,lichen,gut bacteria|E
+a cycle or pathway in biology|krebs cycle,calvin cycle,glycolysis|M
+a genetic condition|sickle cell anemia,cystic fibrosis,down syndrome|C
+something built by living things|beaver dam,coral reef,spider web|E
+a sense|sight,smell,hearing|A
+a model organism|e coli,fruit fly,mouse|B
+something that makes a sound|cricket,whale,frog|O
+an animal with an unusual number of something|octopus,spider,millipede|O
+something that changes colour or shape|chameleon,octopus,cuttlefish|O
+a technology based on biology|crispr,pcr,mrna vaccine|B
+something that lives in soil|earthworm,nematode,mycorrhizal fungi|E
+something that lives on or in the human body|gut bacteria,skin bacteria,demodex mites|A
+a part of a plant|root,leaf,flower|O
+a biological pigment|chlorophyll,melanin,hemoglobin|M
+a toxin|botulinum toxin,snake venom,ricin|M
+an extinct organism|dinosaur,woolly mammoth,dodo|E
+a species other organisms depend on|honeybee,sea otter,coral|E
+a way cells communicate|hormones,neurotransmitters,gap junctions|C
+an adaptation to cold|thick fur,hibernation,antifreeze proteins|E
+an adaptation to heat or drought|cactus stem,sweating,camels hump|E
+something that migrates|monarch butterfly,arctic tern,salmon|E
+something that can regenerate|starfish,axolotl,planarian|E
+an organism that makes its own food|oak tree,cyanobacteria,algae|E
+an organism that breaks down dead matter|mushroom,decomposing bacteria,earthworm|E
+something that carries genetic information|dna,rna,chromosome|C
+a mechanism of evolution|natural selection,genetic drift,mutation|E
+an animal that works together in groups|ant,honeybee,wolf|O
+a structure that helps an organism move|flagellum,cilia,pseudopod|C
+something that can be edited or engineered|genome,plasmid,crispr locus|B
+a molecule that breaks down other molecules|protease,lysozyme,ribozyme|M
+something found in blood|erythrocyte,plasma,platelet|A
+an animal with a real-life superpower|mantis shrimp,electric eel,axolotl|O
+a living thing that looks like something else|stick insect,orchid mantis,leaf insect|E
+something in biology named after a mythical creature or character|hydra,sonic hedgehog,pikachurin|B
+an organism you wouldn’t expect to find where it lives|tardigrade,polar bear,hydrothermal vent tube worm|E
+something both beautiful and deadly|poison dart frog,blue ringed octopus,death cap mushroom|E
+something your body does while you sleep|memory consolidation,growth hormone secretion,protein synthesis|A
+something in nature that evolved to deceive|anglerfish lure,cuckoo egg,bee orchid|E
+a natural design that engineers copy|velcro burrs,gecko toe pads,shark skin denticles|B
+a living thing that outlives a human|bristlecone pine,greenland shark,galapagos tortoise|O
+a creature with a bizarre way of feeding|vampire bat,sea star,anglerfish|O
+something that hunts or defends itself using chemistry|bombardier beetle,cone snail,spitting cobra|E
+a molecule that shaped human history|penicillin,dna,quinine|M
+a microbe that changed the world|cyanobacteria,yeast,penicillium notatum|O
+a plant with an unusual survival strategy|venus flytrap,saguaro cactus,pitcher plant|O
+a way animals send messages|bird song,pheromones,bee waggle dance|E
+an animal that is surprisingly smart|crow,octopus,bottlenose dolphin|O
+a creature that mostly lives in the dark|cave fish,fruit bat,giant squid|O
+a trait that arose from a mutation|lactase persistence,blue eyes,sickle cell trait|C
+a body part you could technically live without|appendix,gallbladder,spleen|A
+a living thing that glows under ultraviolet light|scorpion,platypus,coral|E
+an animal that survives something that would kill a human|tardigrade,wood frog,cockroach|E
+a living thing humans domesticated|canis lupus familiaris,zea mays,saccharomyces cerevisiae|B
+a food that exists thanks to selective breeding|brassica oleracea,banana,maize|B
+a cell that does something extraordinary|neuron,macrophage,hematopoietic stem cell|C
+something that can survive in outer space|tardigrade,bacillus subtilis spore,lichen|E
+a living thing with a ridiculous name|blobfish,screaming hairy armadillo,hellbender|O
+something that tricks another species|common cuckoo,mimic octopus,dracula orchid|E
+an animal with a wild courtship ritual|bird of paradise,bowerbird,peacock|O
+a creature that looks like it belongs in a sci-fi film|vampire squid,axolotl,deep sea anglerfish|O
+a creature that builds something impressive|beaver,termite,sociable weaver|O
+something that lives for an extraordinarily long time|quaking aspen pando,turritopsis dohrnii,greenland shark|O
+a biological discovery that happened by accident|penicillin,taq polymerase,green fluorescent protein|B
+an animal with a clever trick for surviving winter|wood frog,arctic fox,black bear|E
+something that can see what humans can’t|mantis shrimp,honeybee,pit viper|A
+something you’d find in a drop of pond water|paramecium,amoeba,euglena|O
+something that smells terrible but matters to nature|rafflesia,amorphophallus titanum,skunk musk|O
+a biological strategy humans have copied in technology|sonar in bats,bioluminescence,lotus effect|B
+something alive that has no brain|jellyfish,sea anemone,venus flytrap|O
+a surprising place life has been found|hydrothermal vent,lake vostok,stratosphere|E
+a dye or pigment made by a living thing|chlorophyll,melanin,carotenoid|M
+a creature that survived a mass extinction|horseshoe crab,coelacanth,ginkgo biloba|E
+a membrane protein|aquaporin,sodium potassium pump,rhodopsin|M
+a structure on a bacterium|flagellum,peptidoglycan wall,pilus|C
+an antibiotic|penicillin,streptomycin,vancomycin|M
+a vaccine|mrna vaccine,bcg vaccine,salk polio vaccine|B
+an immune cell|t lymphocyte,b cell,neutrophil|A
+a neurotransmitter|dopamine,serotonin,acetylcholine|M
+a vitamin|ascorbic acid,cholecalciferol,cobalamin|M
+an amino acid|glycine,tryptophan,cysteine|M
+a lipid|cholesterol,sphingomyelin,triglyceride|M
+a carbohydrate|glucose,cellulose,glycogen|M
+a type of RNA|mrna,trna,microrna|C
+a type of mutation|missense mutation,frameshift mutation,nonsense mutation|C
+a chromosome abnormality|down syndrome,turner syndrome,klinefelter syndrome|C
+an organ|heart,liver,kidney|A
+a gland|pituitary gland,thyroid,adrenal gland|A
+a muscle|biceps brachii,cardiac muscle,diaphragm|A
+a type of tissue|epithelial tissue,connective tissue,nervous tissue|A
+a stage of mitosis|prophase,metaphase,anaphase|C
+a protein involved in muscle contraction|actin,myosin,tropomyosin|M
+something you can grow in a dish|hela cells,escherichia coli,induced pluripotent stem cells|B
+a method for studying the brain|fmri,eeg,patch clamp electrophysiology|B
+a bird|peregrine falcon,emperor penguin,barn owl|O
+a fish|atlantic salmon,great white shark,coelacanth|O
+a reptile|komodo dragon,green sea turtle,tuatara|O
+an amphibian|axolotl,poison dart frog,chinese giant salamander|O
+an insect|bombardier beetle,monarch butterfly,leafcutter ant|O
+a mammal that lives in water|blue whale,sea otter,manatee|O
+an animal that hibernates|arctic ground squirrel,brown bear,little brown bat|E
+a flower|orchid,rafflesia arnoldii,sunflower|O
+a tree|sequoia sempervirens,ginkgo biloba,baobab|O
+an organism used in baking or brewing|saccharomyces cerevisiae,lactobacillus,aspergillus oryzae|B
+a way plants spread their seeds|anemochory wind,zoochory animal ingestion,hydrochory water|E
+an animal with a shell|chambered nautilus,hermit crab,galapagos tortoise|O
+an animal with venom|inland taipan,box jellyfish,cone snail|O
+a structure in the eye|retina,cornea,fovea centralis|A
+something found in the nucleus|chromatin,nucleolus,histone octamer|C
+something in the cell membrane|phospholipid bilayer,glycoprotein,cholesterol|C
+a molecule cells use to store energy|adenosine triphosphate,glycogen,triacylglycerol|M
+a cause of mutations|ultraviolet radiation,ionizing radiation,benzo a pyrene|C
+an application of genetic engineering|recombinant human insulin,golden rice,car t therapy|B
+a pioneering biology experiment|hershey chase,meselson stahl,miller urey|B
+a fossil organism|archaeopteryx,trilobite,tiktaalik|E
+a molecule that carries oxygen|hemoglobin,myoglobin,hemocyanin|M
+an enzyme involved in digestion|pepsin,trypsin,pancreatic amylase|M
+a plant used as medicine|foxglove digitalis,willow salix,cinchona|B
+a toxin made by a plant|ricin,nicotine,curare|M
+a protein that fights infection|immunoglobulin g,interferon alpha,lysozyme|M
+an animal that glides|colugo flying lemur,sugar glider,flying fish|O`.split('\n').map(l=>{
+  const [q,c,cat]=l.split('|');
+  return {q,c:c.split(',').map(norm),cat:cat||'M'};
+});
+
+const $=id=>document.getElementById(id),TL=27;
+const S={
+  ps:[],i:0,res:[],depth:0,shown:0,s:0,tgt:0,daily:true,used:[],
+  lock:false,judging:false,wrong:0,date:'',stg:-1,kick:0,pop:null,
+  tEnd:0,tm:null,playerName:'Anonymous Diver'
+};
+
+const TIERS=[[0,'Ribosome'],[75,'Cytosol · Hsp70'],[225,'Chaperonin cage'],[375,'Oligomer assembly'],[700,'Native complex']];
+const STAGES=[
+  'PRIMARY · Nascent polypeptide emerging cotranslationally from the ribosome exit tunnel (N → C)',
+  'SECONDARY · Local α-helices and antiparallel β-sheets form via backbone hydrogen bonds',
+  'TERTIARY · Hydrophobic core collapse & native folding within the GroEL - GroES chaperonin cage',
+  'QUATERNARY · Assembly of 4 identical protomers into a D2 homotetramer with 3 orthogonal C2 axes'
+];
+const tier=d=>TIERS.filter(t=>d>=t[0]).pop()[1];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shape=n=>n.length>=2&&/[aeiouy0-9]/.test(n)&&!/(.)\1{3,}/.test(n);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+
+const pOf=r=>100*Math.pow(10,-3.3*r),rOf=p=>cl(Math.log10(100/Math.max(.05,Math.min(100,p)))/3.3);
+const tag=(r,ok)=>{if(!ok)return'MISFOLD';const p=pOf(r);return p>=10?'GENE-RIC':p>=.8?'SPECIE-FIC':'ONE IN A BIO-MILLION'};
+const tcol=(r,ok)=>!ok?'#C8322B':r<.3?'#B8862B':r<.67?'#233F73':'#8E3B75';
+
+// Load stored player name
+try{const savedName=localStorage.getItem('geneius_diver');if(savedName){S.playerName=savedName;$('player-name').value=savedName;$('howto').classList.remove('hide');}}catch(e){}
+$('save-name').onclick=()=>{
+  const n=$('player-name').value.trim()||'Anonymous Diver';
+  S.playerName=n;try{localStorage.setItem('geneius_diver',n)}catch(e){}
+  $('howto').classList.remove('hide');
+  $('save-name').textContent='SAVED';
+  $('save-name').disabled=true;
+  setTimeout(()=>{$('save-name').textContent='SAVE';$('save-name').disabled=false;},3000);
+};
+
+// =========================================================================
+// 2. QUESTION RANDOMIZATION & DAILY CYCLING
+// =========================================================================
+function hashDate(str){
+  let h=0x811c9dc5;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)}
+  return h>>>0;
+}
+function mulberry32(a){
+  return function(){
+  let t=a+=0x6D2B79F5;
+  t=Math.imul(t^t>>>15,t|1);
+  t^=t+Math.imul(t^t>>>7,t|61);
+  return((t^t>>>14)>>>0)/4294967296;
+  }
+}
+function pickQuestions(isDaily){
+  const L=B_DATA.length;
+  if(isDaily){
+  // Daily set: Seeded by today's calendar date string (YYYY-MM-DD)
+  const seed=hashDate('geneius-daily-'+S.date);
+  const rng=mulberry32(seed);
+  const indices=B_DATA.map((_,i)=>i);
+  for(let i=indices.length-1;i>0;i--){
+  const j=Math.floor(rng()*(i+1));
+  [indices[i],indices[j]]=[indices[j],indices[i]];
+  }
+  // Select 7 diverse categories
+  const selected=[];
+  const seenCats=new Set();
+  for(const idx of indices){
+  const item=B_DATA[idx];
+  if(!seenCats.has(item.cat)){
+  selected.push(item);
+  seenCats.add(item.cat);
+  if(selected.length>=7)break;
+  }
+  }
+  // Fill up to 7 if categories weren't all distinct
+  if(selected.length<7){
+  for(const idx of indices){
+  if(!selected.includes(B_DATA[idx])){
+  selected.push(B_DATA[idx]);
+  if(selected.length>=7)break;
+  }
+  }
+  }
+  return selected;
+  } else {
+  // Random Dive: Truly random from pool, avoiding recently seen
+  let seen=[];try{seen=JSON.parse(localStorage.getItem('geneius_seen'))||[]}catch(e){}
+  let pool=B_DATA.map((item,i)=>({item,i})).filter(x=>!seen.includes(x.i));
+  if(pool.length<7){seen=[];pool=B_DATA.map((item,i)=>({item,i}))}
+  for(let i=pool.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  const chosen=pool.slice(0,7);
+  try{localStorage.setItem('geneius_seen',JSON.stringify(seen.concat(chosen.map(x=>x.i))))}catch(e){}
+  return chosen.map(x=>x.item);
+  }
+}
+
+// =========================================================================
+// 3. SCIENTIFIC VERIFICATION ENGINE (Netlify AI Function + Wikipedia REST + Fallback)
+// =========================================================================
+
+// Category validation rules for Wikipedia descriptions & extracts
+const TAXONOMY_RULES={
+  'protein':/protein|enzyme|polypeptide|globin|collagen|antibody|immunoglobulin|receptor|transporter|hormone|chaperone|histone|interferon|actin|myosin|tubulin|polymerase|kinase|protease/i,
+  'enzyme':/enzyme|catalyzes|polymerase|kinase|synthase|hydrolase|ligase|dehydrogenase|protease|amylase|isomerase|nuclease|catalase|peptidase/i,
+  'gene':/gene|encodes|locus|protein-coding|rna-coding|allele|pseudogene|chromosome|mutat/i,
+  'molecule':/molecule|chemical|compound|organic|lipid|carbohydrate|nucleic|acid|protein|hormone|sugar|vitamin|neurotransmitter|metabolite/i,
+  'cell':/cell|organelle|nucleus|mitochondri|ribosome|cytosol|vacuole|chloroplast|lysosome|membrane|endoplasmic/i,
+  'disease':/disease|syndrome|disorder|infection|cancer|illness|pathology|condition|malaria/i,
+  'drug':/drug|antibiotic|medication|pharmaceutical|alkaloid|compound|medicine|therapy|extract/i,
+  'animal':/animal|mammal|bird|reptile|amphibian|fish|insect|crustacean|mollusc|invertebrate|vertebrate|chordat|arthropod|carnivore|herbivore|species of/i,
+  'plant':/plant|tree|flower|shrub|angiosperm|gymnosperm|bryophyte|flora|botanical|herb|fern|cactus|grass/i,
+  'microbe':/bacterium|bacteria|microorganism|microbe|virus|fungus|yeast|protozoa|archaea/i,
+  'fungus':/fungus|fungi|mushroom|yeast|mold|mycelium|ascomycete|basidiomycete/i,
+  'virus':/virus|viral|phage|bacteriophage|pathogen|virion|capsid/i,
+  'bacterium':/bacterium|bacteria|gram-positive|gram-negative|bacillus|streptococcus|staphylococcus|e coli|salmonella|microorganism/i,
+  'body part':/organ|bone|muscle|tissue|gland|nerve|artery|vein|anatomy|body part|viscera|limb/i,
+  'bone':/bone|skeleton|skeletal|ossicle|cranium|femur|tibia|vertebra/i,
+  'organ':/organ|viscera|gland|heart|liver|kidney|lung|brain|stomach|pancreas/i,
+  'hormone':/hormone|endocrine|peptide hormone|steroid|secretion|thyroid|insulin|adrenaline/i,
+  'process':/process|cycle|pathway|photosynthesis|mitosis|respiration|metabolism|synthesis|meiosis|replication/i,
+  'scientist':/biologist|scientist|naturalist|physician|geneticist|zoologist|botanist|nobel/i,
+  'technique':/technique|method|assay|microscopy|spectrometry|electrophoresis|pcr|sequencing|chromatography|imaging/i
+};
+
+function getRuleForQuestion(q){
+  const lq=q.toLowerCase();
+  for(const k of Object.keys(TAXONOMY_RULES)){
+  if(lq.includes(k))return TAXONOMY_RULES[k];
+  }
+  return /biology|biological|organism|species|cell|protein|animal|plant|nature|chemical/i;
+}
+
+// 1. Instant check against question's curated common answers
+function checkCuratedCommon(n,p){
+  const idx=p.c.findIndex(y=>y===n||y+'s'===n||y===n+'s'||n.includes(y));
+  if(idx>=0){
+  const r=cl(0.15+idx*0.06,0.12,0.30);
+  return {
+  ok:true,
+  r,
+  note:`A canonical and widely recognized answer for ${p.q}.`
+  };
+  }
+  return null;
+}
+
+// 2. Wikipedia Live REST API verification (CORS free, no API key required!)
+async function verifyViaWikipedia(raw,n,p){
+  const rule=getRuleForQuestion(p.q);
+  const cleanTerm=encodeURIComponent(raw.trim());
+  const url=`https://en.wikipedia.org/api/rest_v1/page/summary/${cleanTerm}`;
+
+  const res=await fetch(url,{headers:{'Accept':'application/json'}});
+  if(!res.ok){
+  // Try search if direct summary is 404
+  const searchUrl=`https://en.wikipedia.org/w/api.php?action=opensearch&search=${cleanTerm}&limit=1&namespace=0&format=json&origin=*`;
+  const sRes=await fetch(searchUrl);
+  if(sRes.ok){
+  const sData=await sRes.json();
+  if(sData[1]&&sData[1][0]){
+  const redirectTerm=encodeURIComponent(sData[1][0]);
+  const rRes=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${redirectTerm}`);
+  if(rRes.ok){
+  return evaluateWikiData(await rRes.json(),p,rule,raw);
+  }
+  }
+  }
+  return {
+  ok:false,
+  r:0,
+  note:`"${raw}" was not found as a recognized biological concept or entity.`
+  };
+  }
+
+  const data=await res.json();
+  return evaluateWikiData(data,p,rule,raw);
+}
+
+function evaluateWikiData(data,p,rule,raw){
+  const desc=data.description||'';
+  const extract=data.extract||'';
+  const combined=(desc+' '+extract).toLowerCase();
+
+  // Exclude disambiguation pages or obvious non-biological matches
+  if(data.type==='disambiguation'){
+  return {ok:false,r:0,note:`"${raw}" is ambiguous or refers to multiple non-specific entries.`};
+  }
+
+  const matchesCategory=rule.test(desc)||rule.test(extract);
+
+  if(!matchesCategory){
+  const entityType=desc?desc.toLowerCase():'a non-matching subject';
+  return {
+  ok:false,
+  r:0,
+  note:`"${data.title||raw}" appears to be ${entityType}, which is not valid for "${p.q}".`
+  };
+  }
+
+  // It matches! Calculate rarity based on extract brevity / obscurity
+  // Common terms have massive articles (>400 chars) and common words; obscure terms have short extracts
+  const len=extract.length;
+  let rarity=0.55;
+  if(len>500)rarity=0.28;
+  else if(len>300)rarity=0.48;
+  else if(len>150)rarity=0.72;
+  else rarity=0.88;
+
+  // Format clean 1-sentence note
+  let sentence=extract.split(/(?<=[.?!])\s+/)[0]||desc;
+  if(sentence.length>140)sentence=sentence.slice(0,137)+'...';
+
+  return {
+  ok:true,
+  r:rarity,
+  note:sentence||`A scientifically verified example of ${p.q}.`
+  };
+}
+
+// 3. Master Judge Function: Netlify Function -> Wikipedia REST API -> Biology Fallback
+async function judge(raw,n,p){
+  // Check common pre-cached answers first
+  const curated=checkCuratedCommon(n,p);
+  if(curated)return curated;
+
+  // Live client-side Wikipedia REST API verification
+  try{
+  const ctrl2=new AbortController();
+  const to2=setTimeout(()=>ctrl2.abort(),6500);
+  const wikiRes=await Promise.race([verifyViaWikipedia(raw,n,p),new Promise((_,rj)=>setTimeout(()=>rj(new Error('timeout')),6500))]);
+  clearTimeout(to2);
+  return wikiRes;
+  }catch(e){
+  // Offline / Network fallback
+  if(!shape(n)||/(asdf|qwer|zxcv|hjkl)|[^aeiouy ]{6,}/.test(n)||n===norm(p.q)||/^(yes|no|idk|none|nothing|test|hello|lol|abc|xyz|dunno)$/.test(n)){
+  return {ok:false,r:0,note:'That does not look like a genuine biological answer.'};
+  }
+  // If it has strong biological suffixes (e.g. -ase, -in, -cide, -mycin, -itis, -idae)
+  const isBioSuffix=/(ase|osis|ine|ium|ia|us|is|ae|oid|in|ella|coccus|virus|mycin|phyll|soma|cyte|zyme)$/i.test(n);
+  if(isBioSuffix){
+  return {ok:true,r:0.75,note:`Recognized biological nomenclature for ${p.q}.`};
+  }
+  return {ok:false,r:0,note:'Could not verify this answer as biologically accurate. (MISFOLD)'};
+  }
+}
+
+// =========================================================================
+// 4. WATERCOLOUR RENDERER & ACCURATE PROTEIN FOLDING (PRIMARY -> D2 TETRAMER)
+// =========================================================================
+let W=300,H=208;const TP=Math.PI*2,cv=$('cv'),ctx=cv.getContext('2d'),INK='#2A1F2D';
+const lerp=(a,b,t)=>a+(b-a)*t,sm=t=>t*t*(3-2*t);
+const mix=(h,t,a)=>{
+  const n=x=>parseInt(h.slice(x,x+2),16),f=x=>Math.round(lerp(n(x),parseInt(t.slice(x,x+2),16),a)).toString(16).padStart(2,'0');
+  return'#'+f(1)+f(3)+f(5);
+};
+
+const ol=(f,w=1.2,solid)=>{
+  const ga=ctx.globalAlpha;
+  ctx.globalAlpha=ga*(solid?1:.92);
+  ctx.fillStyle=f;ctx.fill();
+  ctx.save();ctx.clip();
+  ctx.globalAlpha=ga*.36;ctx.strokeStyle=mix(f,'#3A2A60',.38);ctx.lineWidth=w*5;ctx.stroke();
+  ctx.restore();
+  ctx.globalAlpha=ga*.7;ctx.strokeStyle=mix(f,INK,.6);ctx.lineWidth=w*.8;ctx.stroke();
+  ctx.globalAlpha=ga;
+};
+const E=(x,y,rx,ry,f,w)=>{ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TP);ol(f,w)};
+
+const ORG=[
+ (x,y)=>{E(x,y,17,16,'#E9B8A0');E(x+3,y-2,6,5.5,'#C4684F');E(x+1,y-4,2,1.6,'#FBE6D2',.01);ctx.fillStyle=INK;for(let a=0;a<9;a++){const g=a*TP/9;ctx.beginPath();ctx.arc(x+Math.cos(g)*16.5,y+Math.sin(g)*15.5,1.1,0,TP);ctx.fill()}},
+ (x,y)=>{E(x,y,19,10,'#D9A441');E(x,y,16,7,'#EBCB7C',.01);ctx.strokeStyle=INK;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-13,y);for(let k=1;k<=6;k++)ctx.lineTo(x-13+k*4.3,y+(k%2?-5.5:5.5));ctx.stroke()},
+ (x,y)=>{for(let k=0;k<4;k++){for(const[w,c]of[[4.6,INK],[3,'#D98873']]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();for(let t=-20;t<=20;t+=4){const yy=y+k*6+Math.sin(t*.35+k)*2;t>-20?ctx.lineTo(x+t,yy):ctx.moveTo(x+t,yy)}ctx.stroke()}for(let t=-18;t<=18;t+=8){ctx.beginPath();ctx.arc(x+t,y+k*6+Math.sin(t*.35+k)*2-3.4,1.3,0,TP);ol('#E3B53B',.6)}}},
+ (x,y)=>{for(let k=0;k<4;k++)for(const[w,c]of[[5.6,INK],[3.6,'#F08FB8']]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.ellipse(x,y+k*6,18-k*2,5,0,Math.PI*.05,Math.PI*.95);ctx.stroke()}E(x+21,y-2,3.2,3.2,'#B9C79A');E(x-19,y+22,2.6,2.6,'#B9C79A')},
+ (x,y)=>{E(x,y,8,8,'#C65A43');ctx.fillStyle='#F5D9C7';for(const[a,b]of[[-3,-2],[2,2],[-1,3],[3,-3]]){ctx.beginPath();ctx.arc(x+a,y+b,1.1,0,TP);ctx.fill()}},
+ (x,y)=>{E(x,y,7,7,'#E8E0B8');E(x-2,y-2,1.8,1.8,'#fff',.01)},
+ (x,y)=>{E(x,y,10,7.5,'#9AA047');E(x+1,y,3.8,3.5,'#5B6128')}
+];
+const ITEMS=Array.from({length:9},(_,j)=>({t:j%7,fx:(15+((j*61)%220))/260,ph:j*37,par:.5+(j%4)*.2}));
+
+const M=68,TY=[];
+[['L',4],['H',12],['L',3],['E',7],['L',2],['E',7],['L',2],['E',7],['L',2],['E',7],['L',3],['H',12]].forEach(([c,n])=>{for(let i=0;i<n;i++)TY.push(c)});
+const mk=ch=>{let a=TY.map(x=>x===ch?1:0);for(let k=0;k<2;k++)a=a.map((_,i)=>((a[i-1]||0)+a[i]+(a[i+1]||0))/3);return a};
+const HM=mk('H'),EM=mk('E');
+const nrm=v=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l)},crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+
+const EL=[['L',4],['H',12],['L',3],['E',7],['L',2],['E',7],['L',2],['E',7],['L',2],['E',7],['L',3],['H',12]];
+function lay(P,tail){
+  const o=[];let pe=tail,pi=0;
+  EL.forEach(([t,n])=>{
+  if(t==='L'){
+  const ns=P[pi][0];
+  for(let k=0;k<n;k++)o.push([0,1,2].map(a=>lerp(pe[a],ns[a],(k+1)/(n+1))));
+  } else {
+  const[a,b]=P[pi++];
+  for(let k=0;k<n;k++)o.push([0,1,2].map(c=>lerp(a[c],b[c],(k+.5)/n)));
+  pe=b;
+  }
+  });
+  return o;
+}
+const ELR=[];{let p=0;EL.forEach(([t,n])=>{ELR.push({t,s:p,e:p+n-1});p+=n})}
+
+// Secondary & Tertiary coordinates
+const SECL=lay([[[-30,-44,0],[30,-44,0]],[[30,-20,0],[-30,-20,0]],[[-30,-8,0],[30,-8,0]],[[30,4,0],[-30,4,0]],[[-30,16,0],[30,16,0]],[[30,36,0],[-30,36,0]]],[-46,-52,0]),
+TERL=lay([[[-32,-26,32],[28,-30,32]],[[30,-18,12],[-30,-18,12]],[[-30,-6,4],[30,-6,4]],[[30,6,4],[-30,6,4]],[[-30,18,12],[30,18,12]],[[34,22,-30],[-26,24,-30]]],[-52,-30,34]);
+
+function dense(P,s0,e0,sub){
+  const o=[];
+  for(let i=s0;i<e0;i++){
+  const p0=P[Math.max(s0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(e0,i+2)];
+  for(let u=0;u<sub;u++){
+  const t=u/sub,t2=t*t,t3=t2*t,f=(a,b,c,d)=>.5*(2*b+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);
+  o.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1]),f(p0[2],p1[2],p2[2],p3[2])]);
+  }
+  }
+  o.push([P[e0][0],P[e0][1],P[e0][2]]);
+  return o;
+}
+
+function shape3(sh,fold,now){
+  const A=[];
+  for(let i=0;i<M;i++){
+  const ln=[(i/(M-1)-.5)*172,(i%2?1:-1)*2.5*(1-sh),0];
+  A.push(ln.map((v,k)=>lerp(lerp(v,SECL[i][k],sh),TERL[i][k],fold)));
+  }
+  const out=A.map((a,i)=>{
+  const p=A[Math.max(0,i-1)],q=A[Math.min(M-1,i+1)],T=nrm([q[0]-p[0],q[1]-p[1],q[2]-p[2]]),
+  ref=Math.abs(T[1])>.9?[1,0,0]:[0,1,0],N=nrm(crs(T,ref)),Bn=crs(T,N),ph=i*TP/3.6,r=10*sh*HM[i],pl=(i%2?1:-1)*1.2*sh*EM[i],jw=.8+1.4*sh+.8*fold;
+  return[0,1,2].map(k=>a[k]+r*(Math.cos(ph)*N[k]+Math.sin(ph)*Bn[k])+pl*Bn[k]+jw*Math.sin(now/(300+70*k)+i*.9+k*2.1));
+  });
+  const c=[0,1,2].map(k=>out.reduce((t,p)=>t+p[k],0)/M);
+  let mr=0;out.forEach(p=>{mr=Math.max(mr,Math.hypot(p[0]-c[0],p[1]-c[1],p[2]-c[2]))});
+  const sc=Math.min(1,84/mr);
+  return out.map(p=>p.map((v,k)=>(v-c[k])*sc));
+}
+
+const NZ=document.createElement('canvas');NZ.width=NZ.height=96;
+{
+  const n=NZ.getContext('2d'),d=n.createImageData(96,96);
+  for(let i=0;i<d.data.length;i+=4){
+  const v=Math.random()*255;
+  d.data[i]=d.data[i+1]=d.data[i+2]=v;
+  d.data[i+3]=14;
+  }
+  n.putImageData(d,0,0);
+}
+let NZP=null,BG=null;
+const STR=Array.from({length:18},()=>({x:0,y:0}));
+
+function fit(){
+  const r=cv.parentNode.getBoundingClientRect();
+  if(!r.width)return;
+  W=300;H=Math.max(140,Math.round(300*r.height/r.width));
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.round(r.width*dpr);
+  cv.height=Math.round(r.height*dpr);
+  NZP=ctx.createPattern(NZ,'repeat');
+  STR.forEach(t=>{t.x=Math.random()*W;t.y=Math.random()*H});
+}
+new ResizeObserver(fit).observe(cv.parentNode);fit();
+
+// Point Group D2 (222) Rotations:
+// Identical protomers related by three orthogonal 2-fold axes:
+// k=0: Identity (Protomer A)
+// k=1: 180° around X axis (Protomer B)
+// k=2: 180° around Y axis (Protomer C)
+// k=3: 180° around Z axis (Protomer D)
+const rot=(p,k,th)=>{
+  const c=Math.cos(th),s=Math.sin(th),[x,y,z]=p;
+  return k===1?[x,y*c-z*s,y*s+z*c]:
+  k===2?[x*c+z*s,y,-x*s+z*c]:
+  k===3?[x*c-y*s,x*s+y*c,z]:p;
+};
+const C0=[28,20,20];
+const SUB=[
+  {H:'#E8806A',E:'#F2DFA0',L:'#C9B458',name:'A'},
+  {H:'#E3B53B',E:'#9DA24C',L:'#E8806A',name:'B'},
+  {H:'#F1E6BD',E:'#D9715C',L:'#8EA070',name:'C'},
+  {H:'#8FA37A',E:'#E3B53B',L:'#F1E6BD',name:'D'}
+];
+const BEAD=['#E3B53B','#8FA37A','#E8806A','#F1E6BD'];
+const CLS=Array.from({length:M},(_,i)=>(i*7+((i/3)|0)*5)%4); // hydrophobic, polar, acidic, basic
+
+// Draw crystallographic C2 2-fold lens symbol at coordinates
+function drawC2Symbol(x,y,size=4,color='#FFF6D6'){
+  ctx.save();
+  ctx.fillStyle=color;
+  ctx.strokeStyle=INK;
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  // Lenticular / oval 2-fold symbol
+  ctx.ellipse(x,y,size,size*0.55,0,0,TP);
+  ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+
+function drawRibo(rib,a){
+  if(a<.02||!rib)return;
+  ctx.globalAlpha=a;const x=rib[0],y=rib[1];
+  // 50S large ribosomal subunit with exit tunnel
+  ctx.beginPath();ctx.ellipse(x+24,y+5,25,20,0,0,TP);ol('#E8AE55',1.4);
+  // 30S small subunit with mRNA
+  ctx.beginPath();ctx.ellipse(x+23,y-17,18,9.5,0,0,TP);ol('#E8837A',1.4);
+  // Exit tunnel
+  ctx.lineCap='round';ctx.strokeStyle=INK;ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+15,y+4);ctx.stroke();
+  ctx.strokeStyle='#F6EBC3';ctx.lineWidth=1.8;ctx.stroke();
+  // mRNA strand
+  ctx.strokeStyle='#C2185B';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x+2,y-19);ctx.lineTo(x+46,y-19);ctx.stroke();
+  // tRNAs in P and A sites
+  for(const dx of[17,28]){
+  ctx.strokeStyle=INK;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x+dx,y-10);ctx.lineTo(x+dx,y-2);ctx.stroke();
+  ctx.beginPath();ctx.arc(x+dx,y-12,2.2,0,TP);ol('#6FB7B0',.8);
+  }
+  ctx.globalAlpha=1;
+}
+
+const ION=[['Mg2+','#B7C46A',3.9,1],['K+','#E8806A',3.4,1],['Na+','#F1E6BD',3.1,1],['Ca2+','#E3B53B',3.7,1],['Cl-','#9CC7C9',4.1,0]];
+const IONS=Array.from({length:20},(_,j)=>({t:j%5,fx:((j*97)%251)/251,ph:j*53,par:.8+((j*7)%5)*.18}));
+function drawIon(x,y,t,sz=1){
+  const[,c,r0,pos]=ION[t],r=r0*sz;
+  ctx.save();ctx.globalAlpha*=.55;ctx.strokeStyle=mix(c,'#ffffff',.25);ctx.lineWidth=.6;ctx.setLineDash([1.2,1.7]);
+  ctx.beginPath();ctx.arc(x,y,r*2.1,0,TP);ctx.stroke();ctx.restore();
+  ctx.beginPath();ctx.arc(x,y,r,0,TP);ol(c,.7);
+  ctx.strokeStyle='rgba(42,31,45,.75)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x-r*.5,y);ctx.lineTo(x+r*.5,y);
+  if(pos){ctx.moveTo(x,y-r*.5);ctx.lineTo(x,y+r*.5)}
+  ctx.stroke();
+}
+
+const RS=Math.max(...shape3(1,1,0).map(p=>Math.hypot(p[0],p[1],p[2])));
+const rr=(x,y,w,h,r,f,wd)=>{ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h);ol(f,wd||1.2,true)};
+
+// GroEL-GroES Anfinsen cage
+function drawCage(cx,cy,cs,fold,q){
+  const enter=1-sm(cl(fold*1.15)),leave=sm(cl(q*1.5)),off=(enter+leave)*H*1.1;
+  if(fold<.01||leave>.99)return;
+  const open=sm(cl(q*3.5)),lid=sm(cl((fold-.55)/.4))*(1-open),gap=(1-lid)*24*cs;
+  const Wc=61*cs,Hr=70*cs,top=cy-Hr/2+off,mid=top+Hr,ccy=top+Hr/2;ctx.globalAlpha=1;
+  rr(cx-Wc*.95,mid,Wc*1.9,Hr,10*cs,'#8E9450');rr(cx-Wc,top,Wc*2,Hr,10*cs,'#A3A862');
+  ctx.strokeStyle='rgba(42,31,45,.32)';ctx.lineWidth=.8;
+  for(const y0 of[top,mid]){for(let j=1;j<7;j++){const x=cx-Wc+j*2*Wc/7;ctx.beginPath();ctx.moveTo(x,y0+3);ctx.lineTo(x,y0+Hr-3);ctx.stroke()}}
+  ctx.strokeStyle='rgba(42,31,45,.5)';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(cx-Wc,mid);ctx.lineTo(cx+Wc,mid);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(cx,ccy,Wc*.6,Hr*.53,0,0,TP);ctx.fillStyle='rgba(255,249,224,.8)';ctx.fill();ctx.strokeStyle=mix('#8E9450',INK,.55);ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(cx,mid+Hr/2,Wc*.46,Hr*.34,0,0,TP);ctx.fillStyle='rgba(255,249,224,.55)';ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.ellipse(cx,top-gap,Wc*.66,22*cs,0,Math.PI,TP);ctx.closePath();ol('#E8806A',1.3,true);
+  ctx.strokeStyle='rgba(42,31,45,.4)';ctx.lineWidth=.8;
+  for(let j=1;j<7;j++){
+  const x=cx-Wc*.66+j*2*Wc*.66/7,hh=22*cs*Math.sqrt(Math.max(0,1-((x-cx)/(Wc*.66))**2));
+  ctx.beginPath();ctx.moveTo(x,top-gap);ctx.lineTo(x,top-gap-hh);ctx.stroke();
+  }
+  for(let j=0;j<7;j++)drawIon(cx-Wc+(j+.5)*2*Wc/7,mid-Hr*.14,1,.85);
+  drawIon(cx-Wc*.9,mid+Hr*.78,0,.9);drawIon(cx+Wc*.9,mid+Hr*.78,0,.9);
+  ctx.fillStyle=INK;ctx.font='4.6px "Press Start 2P",monospace';ctx.textAlign='center';ctx.fillText('GroEL - GroES',cx,mid+Hr*.56);ctx.textAlign='left';
+  ctx.globalAlpha=1;
+}
+
+// Master draw loop
+function draw(now){
+  S.s+=(S.tgt-S.s)*.04;
+  const dv=(S.depth-S.shown)*.06;
+  S.shown+=dv;S.kick*=.985;
+  const d=S.shown;
+  $('dm').textContent=Math.round(d);
+  $('tier').textContent=tier(d);
+  bg(d);
+
+  const st=Math.min(3,Math.round(S.s));
+  if(st!==S.stg){
+  if(S.stg>=0&&st>S.stg)S.pop2={txt:STAGES[st].split(' ·')[0]+' STRUCTURE ACHIEVED',t:performance.now()};
+  S.stg=st;
+  $('stage').textContent=STAGES[st];
+  }
+
+  ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);
+  ctx.globalAlpha=1;ctx.lineCap='round';ctx.lineJoin='round';
+  const bc=S.bgc||[54,100,156];
+  ctx.fillStyle='rgb('+bc.join(',')+')';ctx.fillRect(0,0,W,H);
+  ctx.save();
+
+  const cx=W/2,ccy=H*.46;
+  const sh=sm(cl(S.s)),fold=sm(cl(S.s-1)),q=sm(cl(S.s-2));
+  const cy=ccy*.9+cl(d/1000)*H*.12,cs=.95*Math.min(1.25,Math.min(W/260,H/180));
+
+  const boxes=[],L=shape3(sh,fold,now);
+  const rya=lerp(-.45+Math.sin(now/2800)*.22,.28+Math.sin(now/2800)*.08,q);
+  const rxa=lerp(.5,.3,q);
+  const cY=Math.cos(rya),sY=Math.sin(rya),cX=Math.cos(rxa),sX=Math.sin(rxa);
+  const segs=[];
+
+  const SCL=lerp(lerp(RS,40,fold),45,q)/RS;
+  const proj=(x,y,z)=>{
+  [x,z]=[x*cY+z*sY,-x*sY+z*cY];
+  [y,z]=[y*cX-z*sX,y*sX+z*cX];
+  const PD=lerp(260,800,q),f=PD/(PD+z);
+  return[cx+x*f*cs,cy+y*f*cs,z,f];
+  };
+
+  let rib=null,n0=null;
+  const hulls=[];
+  const subunitCenters=[];
+
+  // Render the 4 protomers (D2 Dihedral symmetry)
+  for(let k=0;k<4;k++){
+  if(k&&q<.02)continue;
+  const far=k?1+(1-q)*8:1;
+  const c=rot(C0,k,Math.PI*q);
+  const al=k?cl(q*10):1;
+  const P=L.map(p=>{
+  const r=rot(p.map(v=>v*SCL),k,Math.PI*q);
+  return proj(r[0]+c[0]*q*far,r[1]+c[1]*q*far,r[2]+c[2]*q*far);
+  });
+  if(!k){rib=P[M-1];n0=P[0]}
+
+  const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);
+  boxes.push([Math.min(...xs)-10,Math.min(...ys)-10,Math.max(...xs)+10,Math.max(...ys)+10]);
+
+  const mx=P.reduce((t,p)=>t+p[0],0)/M,my=P.reduce((t,p)=>t+p[1],0)/M,mz=P.reduce((t,p)=>t+p[2],0)/M;
+  subunitCenters.push({k,x:mx,y:my,z:mz,pts:P});
+  if(q>.02)hulls.push({k,x:mx,y:my,z:mz});
+
+  for(let i=0;i<M-1;i++)segs.push({k,i,al,a:P[i],b:P[i+1],z:(P[i][2]+P[i+1][2])/2,sc:SCL});
+  ELR.forEach(e=>{
+  if(e.t==='E')segs.push({poly:1,k,al,i:e.s,a:P[e.s],b:P[e.e],z:(P[e.s][2]+P[e.e][2])/2,sc:SCL});
+  else if(e.t==='H'){
+  const D=dense(P,e.s,e.e,5),ax=P[e.e][0]-P[e.s][0],ay=P[e.e][1]-P[e.s][1],al2=Math.hypot(ax,ay);
+  const u=al2>1e-3?[ax/al2,ay/al2]:[0,1],pitch=Math.max(4,al2/((e.e-e.s+1)/3.6)),zc=D.reduce((t,p)=>t+p[2],0)/D.length;
+  for(let j=0;j<D.length-1;j++)segs.push({quad:1,k,al,a:D[j],b:D[j+1],u,hw:Math.max(1.6,pitch*.34),z:(D[j][2]+D[j+1][2])/2,zc,sc:SCL});
+  }
+  });
+  }
+
+  const rox=sm(cl(sh*2-.25))*210,ribOn=rib&&rox<205;
+  if(ribOn)boxes.push([rib[0]+rox-8,rib[1]-34,rib[0]+rox+54,rib[1]+30]);
+
+  // Cytoplasm drift elements (organelles, ions, sparkles)
+  const fa=(x,y,r)=>{let a=1;for(const b of boxes){const dx=Math.max(b[0]-x,0,x-b[2]),dy=Math.max(b[1]-y,0,y-b[3]);a=Math.min(a,cl((Math.hypot(dx,dy)-r)/18))}return a};
+  ITEMS.forEach((o,j)=>{
+  const span=H+70,y=(((o.ph*3-d*.7*o.par)%span)+span)%span-35,x=o.fx*W+Math.sin(now/1800+j)*3,a=.92*fa(x,y,26);
+  if(a>.01){ctx.globalAlpha=a;ORG[o.t](x,y);ctx.globalAlpha=1}
+  });
+  IONS.forEach((o,j)=>{
+  const span=H+60,y=(((o.ph*3.7-d*o.par*.9)%span)+span)%span-30+Math.cos(now/1100+j)*2.5,x=o.fx*W+Math.sin(now/900+j*1.7)*3,a=.95*fa(x,y,10);
+  if(a>.01){ctx.globalAlpha=a;drawIon(x,y,o.t);ctx.globalAlpha=1}
+  });
+  STR.forEach(t=>{
+  t.y-=.12+dv*.5;if(t.y<-6){t.y=H+Math.random()*20;t.x=Math.random()*W}
+  const x=t.x+Math.sin(now/1400+t.x)*2,a=.45*fa(x,t.y,3);
+  if(a>.01){ctx.globalAlpha=a;ctx.beginPath();ctx.arc(x,t.y,1.1+(t.x%3)*.4,0,TP);ctx.fillStyle='#F1E6BD';ctx.fill();ctx.globalAlpha=1}
+  });
+
+  // Ribosome rendering in Primary stage
+  if(ribOn){
+  drawRibo([rib[0]+rox,rib[1]],1);
+  for(const[dx,dy]of[[11,-3],[36,-31],[45,18],[6,17],[28,-6]])drawIon(rib[0]+rox+dx,rib[1]+dy,0,.85);
+  }
+
+  // Chaperonin GroEL-GroES cage in Tertiary stage
+  drawCage(cx,cy,cs,fold,q);
+
+  // QUATERNARY ACCURACY: Interfacial Salt Bridges & Symmetry Axes
+  if(q>.45){
+  // Render inter-subunit interfacial interactions (Salt Bridges & Hydrophobic Contacts)
+  ctx.save();
+  const bondAlpha=cl((q-.45)/.4)*.65;
+  ctx.globalAlpha=bondAlpha;
+  ctx.lineWidth=1.2;
+  ctx.setLineDash([2,3]);
+  ctx.strokeStyle='#F4CE3E'; // Gold ionic salt bridge / interface connector
+
+  // Connect interface contact pairs between protomer A & B, A & C, A & D
+  if(subunitCenters.length>=4){
+  const pairs=[[0,1],[0,2],[0,3],[1,2],[2,3]];
+  pairs.forEach(([p1,p2])=>{
+  const c1=subunitCenters[p1],c2=subunitCenters[p2];
+  if(c1&&c2){
+  // Draw interfacial salt-bridge lines between facing residues
+  for(let step=10;step<=50;step+=18){
+  const ptA=c1.pts[step],ptB=c2.pts[M-step-1];
+  if(ptA&&ptB&&Math.hypot(ptA[0]-ptB[0],ptA[1]-ptB[1])<42){
+  ctx.beginPath();ctx.moveTo(ptA[0],ptA[1]);ctx.lineTo(ptB[0],ptB[1]);ctx.stroke();
+  }
+  }
+  }
+  });
+  }
+  ctx.restore();
+  }
+
+  // Draw 3 Orthogonal C2 Symmetry Axes of D2 Point Group
+  if(q>.75){
+  ctx.save();
+  const axisAlpha=cl((q-.75)/.25)*.85;
+  ctx.globalAlpha=axisAlpha;
+  ctx.strokeStyle='#FFF8DC';
+  ctx.lineWidth=.8;
+  ctx.setLineDash([3,3]);
+  ctx.font='5px "Press Start 2P",monospace';
+  ctx.fillStyle='#FFF8DC';
+
+  const axisDefs=[
+  {vec:[1,0,0],label:'C2(x)'},
+  {vec:[0,1,0],label:'C2(y)'},
+  {vec:[0,0,1],label:'C2(z)'}
+  ];
+
+  axisDefs.forEach(ax=>{
+  const len=85;
+  const A=proj(-ax.vec[0]*len,-ax.vec[1]*len,-ax.vec[2]*len);
+  const B=proj(ax.vec[0]*len,ax.vec[1]*len,ax.vec[2]*len);
+  ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();
+
+  // Draw 2-fold crystallographic lens symbols at poles
+  drawC2Symbol(A[0],A[1],3.5,'#FFF6D6');
+  drawC2Symbol(B[0],B[1],3.5,'#FFF6D6');
+  ctx.fillText(ax.label,B[0]+4,B[1]+2);
+  });
+  ctx.restore();
+  }
+
+  // Sort and draw protein backbone ribbons, strands, beads
+  segs.sort((a,b)=>b.z-a.z);
+  for(const s of segs){
+  const al=s.al;
+  if(s.quad){
+  // Alpha-helix ribbon with shaded cylinder 3D depth
+  const a=s.a,b=s.b,ux=s.u[0]*s.hw*sh,uy=s.u[1]*s.hw*sh,nr=s.z<s.zc;
+  const base=SUB[s.k].H,col=nr?mix(base,'#ffffff',.2):mix(base,'#6B3F33',.3);
+  if(sh<.02)continue;
+  ctx.globalAlpha=al;ctx.beginPath();
+  ctx.moveTo(a[0]-ux,a[1]-uy);ctx.lineTo(a[0]+ux,a[1]+uy);ctx.lineTo(b[0]+ux,b[1]+uy);ctx.lineTo(b[0]-ux,b[1]-uy);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=.6;ctx.stroke();
+  ctx.strokeStyle=mix(col,INK,.5);ctx.lineWidth=.7;ctx.globalAlpha=al*.6;
+  ctx.beginPath();ctx.moveTo(a[0]-ux,a[1]-uy);ctx.lineTo(b[0]-ux,b[1]-uy);ctx.moveTo(a[0]+ux,a[1]+uy);ctx.lineTo(b[0]+ux,b[1]+uy);ctx.stroke();
+  if(nr){
+  ctx.globalAlpha=al*.3;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(.8,s.hw*sh*.5);
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+  }
+  continue;
+  }
+  if(s.poly){
+  // Beta-sheet arrow with pleating
+  const a=s.a,b=s.b,dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,nx=-uy,ny=ux;
+  const g2=sm(cl(sh*1.3)),hw=5.4*cs*a[3]*(.6+.4*s.sc)*g2,hl=Math.min(l*.3,hw*2.2);
+  const bx=b[0]-ux*hl,by=b[1]-uy*hl,base=SUB[s.k].E,col=s.z>5?mix(base,'#6B3F33',.22):s.z<-5?mix(base,'#ffffff',.25):base;
+  if(hw<.5)continue;
+  for(const[ox,oy,fc2,ln]of[[1.2,1.6,mix(base,'#5A3328',.42),0],[0,0,col,1]]){
+  ctx.globalAlpha=al;ctx.beginPath();
+  ctx.moveTo(a[0]+nx*hw+ox,a[1]+ny*hw+oy);ctx.lineTo(bx+nx*hw+ox,by+ny*hw+oy);
+  ctx.lineTo(bx+nx*hw*1.7+ox,by+ny*hw*1.7+oy);ctx.lineTo(b[0]+ox,b[1]+oy);
+  ctx.lineTo(bx-nx*hw*1.7+ox,by-ny*hw*1.7+oy);ctx.lineTo(bx-nx*hw+ox,by-ny*hw+oy);
+  ctx.lineTo(a[0]-nx*hw+ox,a[1]-ny*hw+oy);ctx.closePath();
+  if(ln)ol(fc2,.9,true);else{ctx.fillStyle=fc2;ctx.fill()}
+  }
+  continue;
+  }
+  // Flexible coil / loops
+  const i=s.i,f=s.a[3],ty=TY[i],base=SUB[s.k][ty],c0=mix('#8A6A55',base,cl(sh*1.5));
+  const col=s.z>5?mix(c0,'#6B3F33',.25):s.z<-5?mix(c0,'#ffffff',.2):c0;
+  const wd=(ty==='L'?1:1-cl(sh*1.6))*(ty==='L'?Math.max(3,2.6*f*cs*(.6+.4*s.sc)):Math.max(2.4,1.3*f*cs*(.6+.4*s.sc)));
+  const a=s.a,b=s.b,a0=al;
+  if(wd>.5){
+  ctx.globalAlpha=a0*.2;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.strokeStyle=col;ctx.lineWidth=wd+3;ctx.stroke();
+  ctx.globalAlpha=a0*.7;ctx.strokeStyle=mix(col,INK,.55);ctx.lineWidth=wd+1.2;ctx.stroke();
+  ctx.globalAlpha=a0;ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.stroke();
+  }
+  // Primary structure amino acid beads
+  if(sh<.97&&!s.k){
+  ctx.globalAlpha=1;ctx.beginPath();ctx.arc(a[0],a[1],4.6*(1-sh),0,TP);
+  ol(BEAD[CLS[i]],1,true);
+  }
+  }
+
+  ctx.globalAlpha=1;
+  // Protomer labels A, B, C, D in quaternary stage
+  if(q>.75){
+  hulls.forEach(h=>{
+  ctx.globalAlpha=cl((q-.75)/.25);
+  ctx.font='7px "Press Start 2P",monospace';
+  ctx.textAlign='center';
+  ctx.lineWidth=2.5;ctx.strokeStyle='#F1E6BD';
+  ctx.strokeText(SUB[h.k].name,h.x,h.y+3);
+  ctx.fillStyle=INK;ctx.fillText(SUB[h.k].name,h.x,h.y+3);
+  ctx.textAlign='left';ctx.globalAlpha=1;
+  });
+  }
+
+  // N- and C-terminal tags in primary stage
+  if(sh<.9&&n0&&rib){
+  ctx.globalAlpha=1-cl(sh*3);ctx.font='6.5px "Press Start 2P",monospace';ctx.fillStyle='#F1E6BD';
+  ctx.textAlign='center';ctx.fillText('N',n0[0]-10,n0[1]+3);ctx.fillText('C',rib[0]-7,rib[1]-9);
+  ctx.textAlign='left';ctx.globalAlpha=1;
+  }
+  ctx.restore();
+
+  // Paper grain texture overlay
+  ctx.fillStyle=NZP;ctx.fillRect(0,0,W,H);
+
+  // Popups (Rarity / Stage)
+  const pp=S.pop;
+  if(pp){
+  const age=(now-pp.t)/2400;
+  if(age<1){
+  const y=44-age*12,al=age<.7?1:(1-age)/.3;
+  ctx.globalAlpha=al;ctx.textAlign='center';ctx.lineJoin='round';
+  ctx.font='13px "Press Start 2P",monospace';ctx.lineWidth=5;ctx.strokeStyle=INK;
+  ctx.strokeText(pp.txt,W/2,y);ctx.fillStyle=pp.col;ctx.fillText(pp.txt,W/2,y);
+  ctx.font='9px "Press Start 2P",monospace';ctx.lineWidth=4;ctx.strokeText(pp.sub,W/2,y+17);
+  ctx.fillStyle='#FFF6D6';ctx.fillText(pp.sub,W/2,y+17);
+  ctx.textAlign='left';ctx.globalAlpha=1;
+  }else S.pop=null;
+  }
+
+  const p2=S.pop2;
+  if(p2){
+  const a=(now-p2.t)/2200;
+  if(a<1){
+  ctx.globalAlpha=a<.75?1:(1-a)/.25;ctx.fillStyle='#F6EBC3';ctx.fillRect(10,H-26,W-20,17);
+  ctx.strokeStyle=INK;ctx.lineWidth=1.5;ctx.strokeRect(10,H-26,W-20,17);
+  ctx.fillStyle=INK;ctx.font='6px "Press Start 2P",monospace';ctx.textAlign='center';
+  ctx.fillText(p2.txt,W/2,H-15);ctx.textAlign='left';ctx.globalAlpha=1;
+  }else S.pop2=null;
+  }
+
+  requestAnimationFrame(draw);
+}
+
+const STOPS=[[0,[54,100,156]],[300,[38,78,132]],[600,[24,50,98]],[900,[11,22,50]]];
+function bg(d){
+  let a=STOPS[0],b=STOPS[3];
+  for(let i=0;i<3;i++)if(d>=STOPS[i][0]&&d<=STOPS[i+1][0]){a=STOPS[i];b=STOPS[i+1];break}
+  const t=d>=900?1:(d-a[0])/(b[0]-a[0]),c=a[1].map((v,i)=>Math.round(v+(b[1][i]-v)*t));
+  S.bgc=c;document.documentElement.style.setProperty('--bg','rgb('+c.join(',')+')');
+}
+
+// =========================================================================
+// 5. GAME CONTROLLER & PLAY FLOW
+// =========================================================================
+const today=()=>{
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+};
+
+function start(daily){
+  Object.assign(S,{daily,date:today(),i:0,res:[],depth:0,tgt:0,used:[],lock:false});
+  S.ps=pickQuestions(daily);
+  $('intro').classList.add('hide');$('done').classList.add('hide');$('play').classList.remove('hide');
+  showQuestion();
+}
+
+function pips(){
+  $('pips').innerHTML=Array.from({length:7},(_,i)=>{
+  const r=S.res[i];
+  return'<i class="'+(i===S.i&&!r?'cur':'')+'" style="'+(r?'background:'+tcol(r.r,r.ok):'')+'"></i>';
+  }).join('');
+}
+
+function showQuestion(){
+  const c=$('play');c.style.animation='none';void c.offsetWidth;c.style.animation='';
+  S.lock=false;S.judging=false;S.wrong=0;pips();
+  $('pq').textContent='Name '+S.ps[S.i].q;
+  $('inp').value='';$('inp').disabled=false;$('go').classList.remove('hide');$('next').classList.add('hide');
+  $('fb').innerHTML='';$('inp').focus();
+
+  $('tb').style.background='var(--cy)';
+  S.tEnd=Date.now()+TL*1000;
+  clearInterval(S.tm);
+  S.tm=setInterval(()=>{
+  if(S.judging){S.tEnd+=100;return}
+  const l=Math.max(0,S.tEnd-Date.now());
+  $('tb').style.width=(l/TL/10)+'%';
+  $('tt').textContent=Math.ceil(l/1000);
+  if(l<8000)$('tb').style.background='var(--pk)';
+  if(l<=0&&!S.lock){
+  clearInterval(S.tm);
+  conclude({ok:false,r:0,note:'Time expired before a valid fold could form.'},$('inp').value.trim(),'TIME UP');
+  }
+  },100);
+}
+
+function flashMisfold(msg){
+  $('fb').innerHTML='<span class="err"><b>MISFOLD!</b><br>'+esc(msg)+'</span>';
+  const c=$('play');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');
+}
+
+async function submitAnswer(){
+  if(S.lock||S.judging)return;
+  const raw=$('inp').value.trim();
+  const n=norm(raw);
+  const p=S.ps[S.i];
+
+  if(!raw)return flashMisfold('Please enter an answer.');
+  if(S.used.includes(n))return flashMisfold('Already used that biological answer in this dive.');
+  if(!shape(n))return flashMisfold('Please provide a genuine biological answer.');
+
+  S.judging=true;
+  $('inp').disabled=true;
+  $('go').classList.add('hide');
+  $('fb').innerHTML='<span class="blink dim">Analyzing biological conformation…</span>';
+
+  const r=await judge(raw,n,p);
+  S.judging=false;
+  if(S.lock)return;
+
+  if(r.ok){
+  S.used.push(n);
+  return conclude(r,raw);
+  }
+
+  // Answer is WRONG -> MISFOLD
+  S.wrong++;
+  if(S.wrong>=3){
+  return conclude(r,raw);
+  }
+
+  $('inp').disabled=false;
+  $('go').classList.remove('hide');
+  $('inp').select();
+  const left=3-S.wrong;
+  flashMisfold((r.note||'Incorrect conformation.')+' ('+left+' '+(left===1?'try':'tries')+' remaining)');
+}
+
+function conclude(r,raw,forceTag){
+  if(S.lock)return;
+  S.lock=true;
+  clearInterval(S.tm);
+  $('inp').disabled=true;
+  $('go').classList.add('hide');
+
+  const p=S.ps[S.i];
+  const g=r.ok?Math.round(r.r*160):0;
+  const tg=forceTag||tag(r.r,r.ok);
+
+  S.depth+=g;
+  S.tgt=Math.min(3,S.depth/150);
+  S.kick=r.ok?12+r.r*36:0;
+
+  S.res.push({q:p.q,a:raw||'(no answer)',r:r.r,ok:r.ok,g,tg,note:r.note||''});
+  pips();
+
+  S.pop={txt:tg,sub:g?'+'+g+' nm':'0 nm',col:tcol(r.r,r.ok),t:performance.now()};
+  const f=r.ok?Math.max(1,Math.round(r.r*5)):0;
+
+  $('fb').innerHTML='<div><span class="bar">'+[0,1,2,3,4].map(i=>'<i class="'+(i<f?'on':'')+'"></i>').join('')+'</span>'+
+  '<b style="color:'+tcol(r.r,r.ok)+'">'+tg+' · +'+g+' nm</b></div>'+
+  '<p>'+esc(r.note||'')+'</p>';
+
+  $('next').textContent=S.i>=6?'FINISH DIVE':'NEXT';
+  $('next').classList.remove('hide');
+  $('next').focus();
+}
+
+function nextQuestion(){
+  S.i++;
+  if(S.i>=7)finishDive();
+  else showQuestion();
+}
+
+function finishDive(replay){
+  clearInterval(S.tm);
+  const highestStageIdx=Math.min(3,Math.round(Math.min(3,S.depth/150)));
+  const highestStageName=['Primary Chain','Secondary Motifs','Tertiary Fold','Quaternary Homotetramer'][highestStageIdx];
+
+  if(S.daily){
+  try{
+  localStorage.setItem('geneius_last_daily',JSON.stringify({
+  date:S.date,res:S.res,depth:S.depth,stage:highestStageName,diver:S.playerName
+  }));
+  }catch(e){}
+  }
+
+  $('play').classList.add('hide');
+  $('done').classList.remove('hide');
+  $('dt').textContent=S.depth+' nm · '+tier(S.depth);
+  $('ds').textContent='Your protein folded into '+highestStageName.toLowerCase()+'.' + (S.daily?' New dive tomorrow!':'');
+
+  // List answers with 1-sentence notes
+  $('dl').innerHTML=S.res.map(r=>
+  '<li><span><b>'+esc(r.a)+'</b><em>'+esc(r.q)+' · <b style="color:'+tcol(r.r,r.ok)+'">'+r.tg+'</b></em>'+
+  (r.note?'<em class="nt">'+esc(r.note)+'</em>':'')+
+  '</span><b>+'+r.g+' nm</b></li>'
+  ).join('');
+
+  if(S.daily&&!replay)submitToLeaderboard(S.playerName,S.depth,highestStageIdx);else renderLeaderboard('today');
+}
+
+// =========================================================================
+// 6. ON-THEME LEADERBOARD SYSTEM (Dreamlo REST + Netlify API + Local Cohort)
+// =========================================================================
+// Shared leaderboard via Firebase Realtime Database (REST, no SDK needed).
+// Paste your database URL below, e.g. 'https://your-project-default-rtdb.firebaseio.com'
+// Leave it empty to run in local-only mode (see README).
+const FIREBASE_URL='';
+
+const STAGE_BADGES=['Primary','Secondary','Tertiary','Quaternary'];
+
+async function fbFetch(path,opts){
+  const ctrl=new AbortController();
+  const to=setTimeout(()=>ctrl.abort(),6000);
+  try{
+  const r=await fetch(FIREBASE_URL.replace(/\/+$/,'')+path,Object.assign({signal:ctrl.signal},opts||{}));
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return await r.json();
+  }finally{clearTimeout(to)}
+}
+
+async function submitToLeaderboard(name,depth,stageIdx){
+  const entry={name:String(name).slice(0,18)||'Anonymous Diver',depth:Math.round(depth),stage:STAGE_BADGES[stageIdx],date:S.date,ts:Date.now()};
+
+  // 1. Save to this device
+  try{
+  const l=JSON.parse(localStorage.getItem('geneius_local_scores'))||[];
+  l.push(entry);
+  localStorage.setItem('geneius_local_scores',JSON.stringify(l));
+  }catch(e){}
+
+  // 2. Save to the shared leaderboard
+  if(FIREBASE_URL){
+  try{
+  await fbFetch('/scores.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+  }catch(e){}
+  }
+
+  renderLeaderboard('today');
+}
+
+async function renderLeaderboard(view='today'){
+  const container=$('ld-content');
+  const histWrap=$('ld-hist-wrap');
+  $('ld-date').textContent=S.date;
+  container.innerHTML='<span class="blink dim">Retrieving cryo-EM expedition logs…</span>';
+  histWrap.innerHTML='';
+
+  let scores=[],remoteOk=false;
+  if(FIREBASE_URL){
+  try{
+  const q=view==='all'
+  ?'?orderBy=%22depth%22&limitToLast=100'
+  :'?orderBy=%22date%22&equalTo=%22'+encodeURIComponent(S.date)+'%22';
+  const data=await fbFetch('/scores.json'+q);
+  scores=Object.values(data||{});
+  remoteOk=true;
+  }catch(e){}
+  }
+
+  if(!remoteOk){
+  // Local-only fallback
+  let local=[];try{local=JSON.parse(localStorage.getItem('geneius_local_scores'))||[]}catch(e){}
+  scores=local.filter(x=>view==='all'||x.date===S.date);
+  if(!FIREBASE_URL){
+  // No shared leaderboard configured: add sample divers so the board is not empty
+  const cohort=[
+  {name:'Dr. Crick',depth:920,stage:'Quaternary'},
+  {name:'Axolotl_99',depth:810,stage:'Quaternary'},
+  {name:'Curie_Bio',depth:670,stage:'Tertiary'},
+  {name:'RibosomeRider',depth:540,stage:'Tertiary'},
+  {name:'TardigradeX',depth:410,stage:'Secondary'},
+  {name:'SporeSeeker',depth:280,stage:'Secondary'}
+  ];
+  cohort.forEach(c=>{if(!scores.some(s=>s.name===c.name))scores.push(c)});
+  }
+  }
+
+  // Keep valid entries only, best score per diver
+  scores=scores.filter(x=>x&&typeof x.name==='string'&&Number.isFinite(x.depth));
+  const best={};
+  scores.forEach(x=>{if(!best[x.name]||x.depth>best[x.name].depth)best[x.name]=x});
+  scores=Object.values(best);
+  scores.sort((a,b)=>b.depth-a.depth);
+
+  if(!scores.length){
+  container.innerHTML='<p class="dim">No dives recorded yet. Be the first!</p>';
+  return;
+  }
+
+  // Render table
+  let html=`<table class="ld-table">
+  <thead>
+  <tr><th>#</th><th>DIVER</th><th>DEPTH</th><th>STRUCTURE</th></tr>
+  </thead>
+  <tbody>`;
+
+  scores.slice(0,10).forEach((entry,idx)=>{
+  const isMe=entry.name===S.playerName&&entry.depth===S.depth;
+  const badgeClass=entry.stage==='Quaternary'?'badge-4':entry.stage==='Tertiary'?'badge-3':entry.stage==='Secondary'?'badge-2':'badge-1';
+  html+=`<tr class="${isMe?'me-row':''}">
+  <td>#${idx+1}</td>
+  <td><b>${esc(entry.name)}</b>${isMe?' (You)':''}</td>
+  <td><b>${Number(entry.depth)} nm</b></td>
+  <td><span class="stage-badge ${badgeClass}">${esc(entry.stage||'Primary')}</span></td>
+  </tr>`;
+  });
+  html+='</tbody></table>';
+  container.innerHTML=html;
+
+  // Depth histogram & percentile
+  const myDepth=S.depth;
+  const ds=scores.map(s=>s.depth);
+  const below=ds.filter(x=>x<myDepth).length;
+  const pct=scores.length>1?Math.round((below/(scores.length-1))*100):100;
+
+  const bw=140,nb=Math.ceil(1100/bw),bins=Array(nb).fill(0);
+  ds.forEach(x=>bins[Math.min(nb-1,Math.floor(x/bw))]++);
+  const mx=Math.max(1,...bins);
+  const mb=Math.min(nb-1,Math.floor(myDepth/bw));
+
+  histWrap.innerHTML=`
+  <div style="margin-top:14px;border-top:2px dotted var(--dim);padding-top:10px">
+  <div class="px" style="font-size:.52rem;color:var(--cy)">EXPEDITION DEPTH PERCENTILE</div>
+  <p>Your chain reached a <b style="color:var(--am)">${pct}th-percentile fold</b>  -  only ${100-pct}% of the divers shown folded deeper than you.</p>
+  <div class="hist">
+  ${bins.map((c,i)=>`<div class="${i===mb?'me':''}" style="height:${Math.max(6,Math.round(c/mx*100))}%"></div>`).join('')}
+  </div>
+  <div class="axis"><span>0 nm · Unfolded</span><span>Deeper folds →</span><span>${nb*bw} nm · Native</span></div>
+  </div>
+  `;
+}
+
+$('tab-today').onclick=()=>{
+  $('tab-today').classList.add('active');$('tab-all').classList.remove('active');
+  renderLeaderboard('today');
+};
+$('tab-all').onclick=()=>{
+  $('tab-all').classList.add('active');$('tab-today').classList.remove('active');
+  renderLeaderboard('all');
+};
+
+// =========================================================================
+// 7. SHARE & ENTRY HANDLERS
+// =========================================================================
+const shareText=()=>
+  'Gene-ius · '+(S.daily?'Daily Dive '+S.date:'(Practice Dive)')+'\n'+
+  'Depth: '+S.depth+' nm · '+tier(S.depth)+'\n'+
+  'Structure: '+STAGES[Math.min(3,Math.round(Math.min(3,S.depth/150)))].split(' ·')[0]+'\n'+
+  S.res.map(r=>!r.ok?'[X]':r.r<.3?'[C]':r.r<.67?'[R]':'[U]').join(' ')+'\n'+
+  location.href.split('#')[0];
+
+$('share').onclick=async()=>{
+  try{
+  await navigator.clipboard.writeText(shareText());
+  $('sh').textContent='Dive result copied to clipboard! Share it with friends.';
+  }catch(e){
+  $('sh').textContent='Copy result: '+shareText().replace(/\n/g,' | ');
+  }
+};
+
+$('b-daily').onclick=()=>{
+  let sv=null;
+  try{sv=JSON.parse(localStorage.getItem('geneius_last_daily'))}catch(e){}
+  if(sv&&sv.date===today()){
+  Object.assign(S,{daily:true,date:sv.date,res:sv.res,depth:sv.depth,tgt:Math.min(3,sv.depth/150)});
+  $('intro').classList.add('hide');
+  finishDive(true);
+  $('sh').textContent='You already dived today! Showing today’s expedition record.';
+  } else {
+  start(true);
+  }
+};
+$('b-rand').onclick=()=>start(false);
+$('again').onclick=()=>{S.depth=0;S.tgt=0;start(false)};
+$('go').onclick=submitAnswer;
+$('next').onclick=nextQuestion;
+$('inp').addEventListener('keydown',e=>{if(e.key==='Enter')submitAnswer()});
+
+$('stage').textContent=STAGES[0];
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

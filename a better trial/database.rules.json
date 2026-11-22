@@ -1,0 +1,20 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "scores": {
+      ".read": true,
+      ".indexOn": ["date", "depth"],
+      "$id": {
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['name','depth','stage','date','ts'])",
+        "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 18" },
+        "depth": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1120" },
+        "stage": { ".validate": "newData.isString() && (newData.val() == 'Primary' || newData.val() == 'Secondary' || newData.val() == 'Tertiary' || newData.val() == 'Quaternary')" },
+        "date": { ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)" },
+        "ts": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
